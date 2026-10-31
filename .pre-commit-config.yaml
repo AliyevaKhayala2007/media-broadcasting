@@ -1,0 +1,33 @@
+# Install once: uv run pre-commit install
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^migrations/versions/.*\.sql$
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.2  # keep equal to the ruff version in uv.lock
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: database-sql-in-sync
+        name: database.sql is generated from ddl/
+        entry: uv run ott-build-sql --check
+        language: system
+        files: ^(ddl/.*\.sql|database\.sql)$
+        pass_filenames: false
+      - id: systems-in-sync
+        name: systems/, mapping/ and etl/ are generated from the model
+        entry: uv run ott-systems build --check
+        language: system
+        files: ^(src/media_broadcasting/(models|systems)/.*\.py|systems/.*|mapping/.*|etl/.*)$
+        pass_filenames: false

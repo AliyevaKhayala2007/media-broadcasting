@@ -1,0 +1,59 @@
+[project]
+name = "media-broadcasting-data-pro"
+version = "0.1.0"
+description = "OLTP data model for a multi-country OTT streaming service: PostgreSQL DDL, SQLAlchemy models, Alembic migrations, seed data."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.14",
+    "faker>=30",
+    "psycopg[binary]>=3.2",
+    "pyyaml>=6.0",
+    "sqlalchemy>=2.0.36",
+]
+
+[project.scripts]
+ott-build-sql = "media_broadcasting.database_sql:main"
+ott-seed = "media_broadcasting.seed:main"
+ott-systems = "media_broadcasting.systems.build:main"
+ott-simulate = "media_broadcasting.simulation.cli:main"
+ott-calibrate = "media_broadcasting.simulation.calibrate:main"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.0",
+    "pytest>=8.3",
+    "ruff>=0.8",
+    "testcontainers[postgres]>=4.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/media_broadcasting"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["migrations/versions/*.sql"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+
+# en dash / arrows are deliberate in generated Markdown
+allowed-confusables = ["–", "→", "⇄"]
+
+[tool.ruff.lint.per-file-ignores]
+# generated-style models carry long CHECK expressions verbatim from PostgreSQL
+"src/media_broadcasting/models/*.py" = ["E501"]
+# report SQL is kept on one line per clause for readability
+"src/media_broadcasting/simulation/cli.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["media_broadcasting"]
